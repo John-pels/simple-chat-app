@@ -70,18 +70,31 @@
       let messages = document.getElementById("messages");
       let form = document.getElementById("form");
       let input = document.getElementById("input");
+      const time = new Date().toLocaleString();
+
+      (() => {
+        const user = prompt("Enter your name");
+        socket.emit("setUsername", user);
+      })();
+
+      socket.on("userExists", (data) => {
+        alert(data);
+      });
+      socket.on("userSet", function (data) {
+        user = data.username;
+      });
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
         if (input.value) {
-          socket.emit("chat message", input.value);
+          socket.emit("chat message", { message: input.value, user: user });
           input.value = "";
         }
       });
 
-      socket.on("chat message", (message) => {
+      socket.on("chat message", (data) => {
         let item = document.createElement("li");
-        item.textContent = message;
+        item.textContent = `${data.user} [${time}] : ${data.message}`;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
       });
